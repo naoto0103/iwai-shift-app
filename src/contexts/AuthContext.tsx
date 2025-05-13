@@ -8,6 +8,7 @@ import {
 import { doc, getDoc, Timestamp } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import { User } from '../types/models';
+import { getUserById, convertFirestoreUserData } from '../services/userService';
 
 interface AuthContextProps {
   currentUser: User | null;
@@ -27,32 +28,21 @@ export const AuthProvider: React.FC<{children: React.ReactNode}> = ({ children }
   // ユーザー情報取得関数
   // ユーザー情報取得関数
 const fetchUserData = async (firebaseUser: FirebaseUser) => {
-    try {
-      const userDocRef = doc(db, 'users', firebaseUser.uid);
-      const userDoc = await getDoc(userDocRef);
-      
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        
-        // ここで明示的に型変換しながらjoinDateを適切に処理
-        const joinDate = userData.joinDate instanceof Timestamp 
-          ? userData.joinDate.toDate() 
-          : userData.joinDate;
-        
-        setCurrentUser({
-          id: firebaseUser.uid,
-          ...(userData as Omit<User, 'id' | 'joinDate'>),
-          joinDate: joinDate,
-        });
-      } else {
-        console.error('User document does not exist');
-        setCurrentUser(null);
-      }
-    } catch (error) {
-      console.error('Error fetching user data:', error);
+  try {
+    // userServiceを使用してユーザー情報を取得
+    const user = await getUserById(firebaseUser.uid);
+    
+    if (user) {
+      setCurrentUser(user);
+    } else {
+      console.error('User document does not exist');
       setCurrentUser(null);
     }
-  };
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    setCurrentUser(null);
+  }
+};
 
   // Firebase認証状態の監視
   useEffect(() => {
