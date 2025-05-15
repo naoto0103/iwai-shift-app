@@ -1,0 +1,472 @@
+# 岩井製菓シフト管理システム 要件定義書 (React+TypeScript版)
+
+## 1. プロジェクト概要
+
+### 1.1 目的
+岩井製菓の店舗運営における人員配置の最適化と、シフト作成業務の効率化を図るためのシステムを開発する。従業員が簡単にシフト希望を提出でき、管理者がそれを考慮したシフト作成を行えるようにする。また、勤怠管理機能も統合し、一元的な労務管理を実現する。
+
+### 1.2 開発方針
+- Windows向けデスクトップアプリケーションとして開発
+- Electronフレームワークを採用
+- React+TypeScriptを使用したフロントエンド開発
+- Firebase認証とFirestoreデータベースを利用
+- シンプルで直感的なUIを最優先
+- 型安全性と保守性を重視した開発
+
+### 1.3 システム構成
+- フロントエンド：React + TypeScript
+- デスクトップ実行環境：Electron
+- バックエンド：Node.js (Electron)
+- 認証：Firebase Authentication
+- データベース：Firebase Firestore
+- 状態管理：React Context API または Redux
+- UI：独自コンポーネント + Material-UI等のライブラリ
+- AIアシスタント：OpenAI API
+- デプロイ：Electron-builder (Windows)
+
+### 1.4 開発環境
+- Node.js / npm
+- TypeScript
+- React
+- Electron
+- ESLint + Prettier
+- Jest (テスト)
+- Git (バージョン管理)
+
+## 2. 機能要件
+
+### 2.1 共通機能
+
+#### 2.1.1 ログイン・認証
+- 管理者/従業員の2種類のユーザー権限
+- ID/パスワードによるログイン
+- 自動ログイン機能（オプション）
+- パスワードリセット機能
+- 認証情報の型安全な管理
+
+#### 2.1.2 サイドナビゲーション
+- ユーザー権限に応じたメニュー表示
+- 管理者/従業員モード切り替え（管理者のみ）
+- Reactコンポーネントとして実装
+
+### 2.2 管理者機能
+
+#### 2.2.1 ダッシュボード
+- 機能アイコン（各画面への遷移）
+- 季節情報（桜・ツツジの開花状況など）表示
+- 近日イベント一覧表示
+- Reactコンポーネントによる動的な情報表示
+
+#### 2.2.2 AIアシスタント
+- OpenAI APIを使用した質問回答機能
+  - GPT-4oモデルを利用した対話処理
+  - 関数呼び出し機能を活用した内部データアクセス
+  - 質問内容に応じた適切な情報ソースの選択
+- 内部データアクセス関数
+  - 従業員情報取得機能（機密情報除外）
+  - 店舗情報取得機能
+  - シフト情報取得機能
+  - イベント・季節情報取得機能
+- Web検索連携
+  - 内部データで解決できない質問の外部検索
+  - 検索結果の要約と提示
+- シンプルなチャットインターフェース
+- 管理者画面でのみ表示
+- 型安全なAPI連携
+
+#### 2.2.3 シフト管理
+- シフト表示（月間カレンダー形式）
+- 従業員シフト希望状況の確認
+  - 希望提出状況一覧
+  - 希望詳細（週あたり希望日数、希望曜日、勤務不可日、特記事項）
+- 勤怠状況の確認
+  - 出勤日数、総勤務時間、遅刻/早退回数
+  - 詳細レポート出力
+- シフト自動生成
+  - OpenAI APIを活用したAIベースのシフト生成
+  - JSON形式での構造化データ連携
+  - 複数の優先条件の設定
+    - 従業員希望優先: 従業員の希望を最大限尊重
+    - シフト均等配分: 勤務日数の公平な分配
+    - スキル要件考慮: 店舗ごとの必要スキル充足
+  - 制約条件の厳格な適用
+    - 人間関係制約（同時シフト不可組み合わせ）
+    - 勤務不可日の尊重
+    - 店舗ごとのスキル要件の充足
+  - シフト案の検証・評価機能
+- シフト手動編集機能
+- シフト表のエクスポート機能（Excel/CSV）
+- 再利用可能なカレンダーコンポーネント
+
+#### 2.2.4 従業員管理
+- 従業員一覧表示
+- 従業員検索・フィルタリング
+- 従業員情報登録・編集・削除
+  - 基本情報（名前、ID、パスワード）
+  - スキルレベル設定（厨房、ホール、販売、総合）
+  - 雇用形態、希望勤務日数
+- 人間関係制約管理（同時シフト不可能な組み合わせ）
+- 型安全なフォーム処理
+
+#### 2.2.5 店舗管理
+- 店舗一覧表示
+- 店舗情報登録・編集・削除
+  - 基本情報（店舗名、住所、連絡先）
+  - 必要スキル設定（平日/土日/祝日ごと）
+- 型安全なフォーム処理
+
+#### 2.2.6 イベント・季節情報管理
+- イベント登録・編集・削除
+  - イベント名、期間、影響店舗、来客予測
+- 季節情報登録・編集
+  - 種類（桜、ツツジなど）
+  - エリア別状況、見頃予想
+- 再利用可能なフォームコンポーネント
+
+### 2.3 従業員機能
+
+#### 2.3.1 プロフィール管理
+- 個人情報表示・編集
+  - 基本情報（名前、ニックネーム）
+  - 連絡先情報（メール、電話、住所）
+  - 勤務情報（従業員ID、雇用形態、入社日）
+  - 特記事項
+- プロフィール画像設定
+- 型安全なフォームバリデーション
+
+#### 2.3.2 シフト希望入力
+- 月単位での希望提出
+- 基本希望設定
+  - 週あたり希望勤務日数
+  - 希望曜日（複数選択可）
+- 勤務不可日の指定
+  - 「勤務不可日の編集」ボタン
+  - クリックで選択月の小さいカレンダーを表示
+  - カレンダーで勤務不可日を選択/解除
+- 特記事項入力（自由記述）
+- 希望の保存・提出
+- カスタムカレンダーコンポーネント
+
+#### 2.3.3 勤怠管理
+- 出退勤・休憩打刻
+  - 出勤打刻
+  - 退勤打刻
+  - 休憩開始/終了打刻
+- 当日の勤怠記録表示
+- 月間勤務実績表示
+- 今月のシフト予定表示
+- リアルタイム更新UI
+- 勤怠記録機能
+  - 出退勤・休憩時間の自動計算
+- 勤怠統計機能
+  - 月間勤務統計（勤務日数、総時間、平均）
+  - グラフによる視覚化
+
+## 3. データモデル・型定義
+
+### 3.1 TypeScriptインターフェース
+```typescript
+// ユーザー情報インターフェース
+interface User {
+  id: string;
+  name: string;
+  nickname: string;
+  email: string;
+  phone: string;
+  address: string;
+  position: string;
+  employmentType: 'fulltime' | 'parttime' | 'temporary';
+  joinDate: Date;
+  desiredWorkDays: number;
+  skills: {
+    kitchen: SkillLevel;
+    hall: SkillLevel;
+    sales: SkillLevel;
+    overall: SkillLevel;
+  };
+  specialNotes: string;
+  profileImage?: string;
+  role: 'admin' | 'employee';
+}
+
+// スキルレベル型
+type SkillLevel = 'A' | 'B' | 'C';
+
+// 店舗情報インターフェース
+interface Store {
+  id: string;
+  name: string;
+  address: string;
+  phone: string;
+  skillRequirements: SkillRequirement[];
+}
+
+// スキル要件インターフェース
+interface SkillRequirement {
+  day: 'weekday' | 'saturday' | 'sunday' | 'holiday';
+  kitchen: { A: number; B: number; C: number; };
+  hall: { A: number; B: number; C: number; };
+  sales: { A: number; B: number; C: number; };
+}
+
+// シフト情報インターフェース
+interface Shift {
+  id: string;
+  storeId: string;
+  userId: string;
+  date: Date;
+  startTime: string;
+  endTime: string;
+  status: 'planned' | 'completed';
+  note?: string;
+}
+
+// シフト希望情報インターフェース
+interface ShiftPreference {
+  id: string;
+  userId: string;
+  year: number;
+  month: number;
+  desiredDaysPerWeek: number;
+  preferredWeekdays: ('monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday')[];
+  unavailableDates: Date[];
+  notes: string;
+  submittedAt: Date;
+}
+
+// 勤怠記録インターフェース
+interface Attendance {
+  id: string;
+  userId: string;
+  date: Date;
+  clockInTime: Date;
+  clockOutTime?: Date;
+  breakTimes: { startTime: Date; endTime?: Date; }[];
+  storeId: string;
+  totalWorkHours?: number;
+  status: 'normal' | 'late' | 'early';
+}
+
+// イベント情報インターフェース
+interface Event {
+  id: string;
+  name: string;
+  startDate: Date;
+  endDate: Date;
+  affectedStores: string[];
+  customerPrediction: number;
+}
+
+// 季節情報インターフェース
+interface SeasonalInfo {
+  id: string;
+  name: string;
+  type: 'sakura' | 'azalea' | 'other';
+  progress: number;
+  areas: {
+    name: string;
+    status: string;
+    bestViewingPeriod?: { start: Date; end: Date; };
+  }[];
+  lastUpdated: Date;
+}
+
+// 人間関係制約インターフェース
+interface RelationshipConstraint {
+  id: string;
+  employee1Id: string;
+  employee2Id: string;
+  reason: string;
+}
+```
+
+### 3.2 Firestoreコレクション構造
+```
+1. users（ユーザー）
+   - id: string (Firebase Auth UID)
+   - name: string（氏名）
+   - nickname: string（ニックネーム）
+   - email: string（メールアドレス）
+   - phone: string（電話番号）
+   - address: string（住所）
+   - position: string（職位）
+   - employmentType: string（雇用形態）
+   - joinDate: timestamp（入社日）
+   - desiredWorkDays: number（希望勤務日数/週）
+   - skills: object（スキルレベル）
+     - kitchen: string（厨房: A/B/C）
+     - hall: string（ホール: A/B/C）
+     - sales: string（販売: A/B/C）
+     - overall: string（総合: A/B/C）
+   - specialNotes: string（特記事項）
+   - profileImage: string（プロフィール画像URL）
+   - role: string（権限: admin/employee）
+
+2. stores（店舗）
+   - id: string
+   - name: string（店舗名）
+   - address: string（住所）
+   - phone: string（電話番号）
+   - skillRequirements: array（必要スキル）
+     - day: string（曜日タイプ: weekday/saturday/sunday/holiday）
+     - kitchen: object（厨房: A/B/C別の必要人数）
+     - hall: object（ホール: A/B/C別の必要人数）
+     - sales: object（販売: A/B/C別の必要人数）
+
+3. shifts（シフト）
+   - id: string
+   - storeId: string（店舗ID）
+   - userId: string（従業員ID）
+   - date: timestamp（勤務日）
+   - startTime: string（開始時間）
+   - endTime: string（終了時間）
+   - status: string（状態: planned/completed）
+   - note: string（備考）
+
+4. shiftPreferences（シフト希望）
+   - id: string
+   - userId: string（従業員ID）
+   - year: number（年）
+   - month: number（月）
+   - desiredDaysPerWeek: number（希望日数/週）
+   - preferredWeekdays: array（希望曜日）
+   - unavailableDates: array（勤務不可日）
+   - notes: string（特記事項）
+   - submittedAt: timestamp（提出日時）
+
+5. attendances（勤怠記録）
+   - id: string
+   - userId: string（従業員ID）
+   - date: timestamp（日付）
+   - clockInTime: timestamp（出勤時間）
+   - clockOutTime: timestamp（退勤時間）
+   - breakTimes: array（休憩時間）
+     - startTime: timestamp
+     - endTime: timestamp
+   - storeId: string（勤務店舗ID）
+   - totalWorkHours: number（総勤務時間）
+   - status: string（状態: normal/late/early）
+
+6. events（イベント）
+   - id: string
+   - name: string（イベント名）
+   - startDate: timestamp（開始日）
+   - endDate: timestamp（終了日）
+   - affectedStores: array（影響店舗ID）
+   - customerPrediction: number（来客予測倍率）
+
+7. seasonalInfos（季節情報）
+   - id: string
+   - name: string（情報名）
+   - type: string（種類: sakura/azalea/other）
+   - progress: number（進行度: 0-100%）
+   - areas: array（エリア情報）
+     - name: string（エリア名）
+     - status: string（状況）
+     - bestViewingPeriod: object（見頃期間）
+   - lastUpdated: timestamp（最終更新日）
+
+8. relationshipConstraints（人間関係制約）
+   - id: string
+   - employee1Id: string（従業員1 ID）
+   - employee2Id: string（従業員2 ID）
+   - reason: string（理由）
+```
+
+## 4. コンポーネント構成計画
+
+### 4.1 共通コンポーネント
+- `<Layout />` - アプリケーション全体のレイアウト
+- `<Sidebar />` - サイドナビゲーション
+- `<PageHeader />` - 各ページのヘッダー
+- `<Card />` - 情報カード
+- `<Button />` - ボタンコンポーネント
+- `<Modal />` - モーダルダイアログ
+- `<Form />` - フォームコンポーネント
+- `<Table />` - データテーブル
+- `<Calendar />` - カレンダー表示
+- `<Dropdown />` - ドロップダウンメニュー
+- `<AIAssistant />` - AIアシスタントチャット
+
+### 4.2 機能別コンポーネント
+- `<EmployeeList />` - 従業員一覧
+- `<StoreList />` - 店舗一覧
+- `<ShiftCalendar />` - シフトカレンダー
+- `<ShiftPreferenceForm />` - シフト希望入力
+- `<AttendanceRecord />` - 勤怠記録
+- `<EventList />` - イベントリスト
+- `<SeasonalInfoCard />` - 季節情報カード
+- `<WeatherForecast />` - 天気予報
+
+### 4.3 コンテキスト/状態管理
+- `AuthContext` - 認証情報・ユーザー情報
+- `UIContext` - UI状態（モーダル、サイドバー）
+- `DataContext` - アプリケーションデータ
+
+## 5. UI設計方針
+
+### 5.1 全体設計
+- シンプルでフラットなデザイン
+- 明確な視覚階層
+- 一貫したカラーコード
+- レスポンシブデザイン（最小解像度: 1024×768）
+- Material Design準拠のコンポーネント
+
+### 5.2 カラーパレット
+- メインカラー: #4b6584（ダークブルー）
+- アクセントカラー: #f39c12（オレンジ）
+- 成功: #27ae60（緑）
+- 警告: #f1c40f（黄）
+- 危険: #e74c3c（赤）
+- 情報: #3498db（青）
+- 背景: #f5f6fa（ライトグレー）
+
+### 5.3 画面遷移方式
+- React Routerを使用したSPA方式
+- コンテンツエリアの動的切り替え
+- タブによる関連機能のグループ化
+
+## 6. 開発・導入スケジュール
+
+### 6.1 フェーズ1（基本機能）
+- プロジェクト初期化 (React + TypeScript + Electron)
+- ログイン認証
+- 従業員管理
+- 店舗管理
+- 基本シフト表示
+
+### 6.2 フェーズ2（シフト機能）
+- シフト希望入力
+- シフト自動生成
+- シフト手動編集
+
+### 6.3 フェーズ3（勤怠機能）
+- 勤怠記録
+- 勤怠状況確認
+- レポート出力
+
+### 6.4 フェーズ4（拡張機能）
+- イベント管理
+- 季節情報管理
+- AIアシスタント
+
+## 7. テスト計画
+
+### 7.1 単体テスト
+- Jestを使用したコンポーネントテスト
+- TypeScriptの型検証
+- 入力バリデーションテスト
+
+### 7.2 統合テスト
+- 画面遷移テスト
+- データフロー検証
+- E2Eテスト (Playwright/Cypress)
+
+### 7.3 受入テスト
+- ユーザーシナリオテスト
+- パフォーマンステスト
+
+### 7.4 AIサービステスト
+- AIアシスタント応答品質テスト
+- シフト自動生成品質テスト
+- API連携テスト

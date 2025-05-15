@@ -1,0 +1,3038 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>岩井製菓 シフト管理システム</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #4b6584;
+      --primary-light: #7a95b9;
+      --primary-dark: #2c3e50;
+      --accent-color: #f39c12;
+      --accent-light: #f5b041;
+      --light-bg: #f5f6fa;
+      --success-color: #27ae60;
+      --danger-color: #e74c3c;
+      --warning-color: #f1c40f;
+      --info-color: #3498db;
+    }
+
+    body {
+      font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;
+      background-color: var(--light-bg);
+      color: #333;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    .sidebar {
+      background-color: var(--primary-color);
+      color: white;
+      height: 100vh;
+      position: fixed;
+      top: 0;
+      left: 0;
+      padding-top: 20px;
+      width: 230px;
+      z-index: 1000;
+      transition: all 0.3s;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .sidebar .logo-container {
+      padding: 10px 15px 20px;
+      text-align: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      margin-bottom: 15px;
+    }
+
+    .sidebar .logo {
+      font-size: 22px;
+      font-weight: bold;
+    }
+
+    .sidebar .subtitle {
+      font-size: 13px;
+      opacity: 0.8;
+    }
+
+    .sidebar .nav-link {
+      color: rgba(255, 255, 255, 0.8);
+      padding: 12px 20px;
+      margin-bottom: 5px;
+      border-radius: 0;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .sidebar .nav-link:hover,
+    .sidebar .nav-link.active {
+      color: white;
+      background-color: var(--primary-light);
+    }
+
+    .sidebar .nav-link.active::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background-color: var(--accent-color);
+    }
+
+    .sidebar .nav-link i {
+      width: 20px;
+      text-align: center;
+      margin-right: 10px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 15px;
+    }
+
+    .user-switch {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .user-switch a {
+      color: white;
+      text-decoration: none;
+      padding: 8px 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+
+    .user-switch a.active {
+      background-color: var(--accent-color);
+      font-weight: bold;
+    }
+
+    .user-switch a:hover:not(.active) {
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .main-content {
+      margin-left: 230px;
+      padding: 30px;
+      transition: all 0.3s;
+    }
+
+    .content-header {
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+      border-bottom: 1px solid #ddd;
+    }
+
+    .content-header h2 {
+      font-weight: bold;
+      color: var(--primary-dark);
+    }
+
+    /* コンテンツセクション切り替え用 */
+    .content-section {
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    /* カード共通スタイル */
+    .card {
+      border: none;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+      margin-bottom: 25px;
+      border-radius: 8px;
+    }
+
+    .card-header {
+      background-color: white;
+      padding: 15px 20px;
+      border-bottom: 1px solid #eee;
+      font-weight: bold;
+    }
+
+    /* 季節情報カード */
+    .seasonal-event-card {
+      border-radius: 10px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .seasonal-event-image {
+      height: 120px;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+    }
+
+    .seasonal-event-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 15px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0));
+      color: white;
+    }
+
+    .seasonal-event-body {
+      padding: 15px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 5px;
+    }
+
+    .seasonal-progress {
+      height: 8px;
+      border-radius: 4px;
+    }
+
+    .sakura-progress {
+      background-color: #ffccd5;
+    }
+
+    .sakura-progress .progress-bar {
+      background-color: #ff8da1;
+    }
+
+    .azalea-progress {
+      background-color: #ffd3e0;
+    }
+
+    .azalea-progress .progress-bar {
+      background-color: #ff66a1;
+    }
+
+    /* シフトカレンダー */
+    .calendar-wrapper {
+      overflow-x: auto;
+    }
+
+    .shift-calendar {
+      min-width: 1000px;
+    }
+
+    .shift-calendar th {
+      text-align: center;
+      min-width: 40px;
+      background-color: var(--primary-light);
+      color: white;
+    }
+
+    .shift-calendar th.name-cell {
+      min-width: 100px;
+      background-color: var(--primary-dark);
+    }
+
+    .shift-calendar .weekend {
+      background-color: #ffeeee;
+    }
+
+    .shift-cell {
+      height: 40px;
+      text-align: center;
+      position: relative;
+      vertical-align: middle;
+    }
+
+    .shift-assigned {
+      height: 36px;
+      margin: 2px 0;
+      border-radius: 4px;
+      line-height: 36px;
+      color: white;
+      font-size: 12px;
+      cursor: pointer;
+    }
+
+    .shift-honten {
+      background-color: #3498db;
+    }
+
+    .shift-2nd {
+      background-color: #e67e22;
+    }
+
+    .shift-3rd {
+      background-color: #27ae60;
+    }
+
+    .shift-4th {
+      background-color: #9b59b6;
+    }
+
+    /* スキル表示 */
+    .skills-display {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .skill-box {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+    }
+
+    .skill-name {
+      margin-right: 5px;
+      font-weight: bold;
+    }
+
+    .skill-value {
+      font-weight: bold;
+    }
+
+    .kitchen-skill {
+      background-color: #fdedec;
+      color: #c0392b;
+    }
+
+    .hall-skill {
+      background-color: #ebf5fb;
+      color: #2980b9;
+    }
+
+    .sales-skill {
+      background-color: #eafaf1;
+      color: #27ae60;
+    }
+
+    .overall-skill {
+      background-color: #f5eef8;
+      color: #8e44ad;
+    }
+
+    /* AIアシスタント */
+    .ai-assistant-button {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background-color: var(--accent-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      cursor: pointer;
+      z-index: 1050;
+      transition: all 0.3s;
+    }
+
+    .ai-assistant-button:hover {
+      background-color: var(--accent-light);
+      transform: scale(1.05);
+    }
+
+    .ai-assistant-window {
+      position: fixed;
+      bottom: 100px;
+      right: 30px;
+      width: 360px;
+      height: 500px;
+      border-radius: 12px;
+      background-color: white;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      z-index: 1050;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: all 0.3s;
+      transform-origin: bottom right;
+    }
+
+    .ai-assistant-header {
+      padding: 15px;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .ai-assistant-body {
+      flex-grow: 1;
+      padding: 15px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .ai-assistant-footer {
+      padding: 10px;
+      border-top: 1px solid #eee;
+      display: flex;
+      align-items: center;
+    }
+
+    .ai-assistant-input {
+      flex-grow: 1;
+      border: 1px solid #ddd;
+      border-radius: 20px;
+      padding: 8px 15px;
+      outline: none;
+    }
+
+    .ai-assistant-send {
+      margin-left: 10px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background-color: var(--primary-color);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 10px 15px;
+      border-radius: 12px;
+      margin-bottom: 5px;
+    }
+
+    .message-user {
+      align-self: flex-end;
+      background-color: var(--primary-light);
+      color: white;
+      border-bottom-right-radius: 3px;
+    }
+
+    .message-ai {
+      align-self: flex-start;
+      background-color: #f1f1f1;
+      color: #333;
+      border-bottom-left-radius: 3px;
+    }
+
+    /* 新しく追加した機能アイコン用のスタイル */
+    .function-icons {
+      display: flex;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+      width: 100%;
+    }
+
+    .function-icon {
+      width: 100px;
+      text-align: center;
+      transition: all 0.2s;
+      margin-bottom: 15px;
+    }
+
+    .function-icon:hover {
+      transform: translateY(-5px);
+    }
+
+    .icon-circle {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 10px;
+      background-color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      color: var(--primary-color);
+      font-size: 32px;
+      transition: all 0.2s;
+    }
+
+    .function-icon:hover .icon-circle {
+      background-color: var(--primary-light);
+      color: white;
+    }
+
+    .function-icon p {
+      font-size: 14px;
+      margin: 0;
+      color: var(--primary-dark);
+    }
+
+    /* ログイン画面 */
+    .login-container {
+      max-width: 400px;
+      margin: 100px auto;
+      padding: 30px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: var(--primary-dark);
+    }
+
+    .login-form .form-group {
+      margin-bottom: 20px;
+    }
+
+    .login-form label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .login-form input {
+      width: 100%;
+      padding: 10px 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .login-form button {
+      width: 100%;
+      padding: 12px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .login-form button:hover {
+      background-color: var(--primary-dark);
+    }
+
+    /* 勤怠打刻画面 */
+    .attendance-clock-container {
+      text-align: center;
+      padding: 20px;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    }
+
+    .current-time {
+      font-size: 48px;
+      font-weight: bold;
+      margin: 20px 0;
+      color: var(--primary-dark);
+    }
+
+    .current-date {
+      font-size: 18px;
+      color: #666;
+      margin-bottom: 30px;
+    }
+
+    .clock-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .clock-button {
+      padding: 15px 30px;
+      font-size: 18px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .clock-in-button {
+      background-color: var(--success-color);
+      color: white;
+    }
+
+    .clock-out-button {
+      background-color: var(--danger-color);
+      color: white;
+    }
+
+    .break-start-button {
+      background-color: var(--warning-color);
+      color: white;
+    }
+
+    .break-end-button {
+      background-color: var(--info-color);
+      color: white;
+    }
+
+    .clock-button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .clock-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .attendance-log {
+      margin-top: 40px;
+      text-align: left;
+    }
+
+    .attendance-log h3 {
+      margin-bottom: 15px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 10px;
+    }
+
+    .log-item {
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .log-type {
+      font-weight: bold;
+    }
+
+    .log-time {
+      color: #666;
+    }
+
+    /* プロフィール画面 */
+    .profile-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+    }
+
+    .profile-header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+
+    .profile-image-container {
+      position: relative;
+      width: 150px;
+      height: 150px;
+      margin-right: 30px;
+    }
+
+    .profile-image {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid var(--primary-light);
+    }
+
+    .profile-image-edit {
+      position: absolute;
+      bottom: 5px;
+      right: 5px;
+      background-color: var(--primary-color);
+      color: white;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .profile-image-edit:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .profile-name {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .profile-position {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .profile-details {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+
+    .profile-section {
+      margin-bottom: 30px;
+    }
+
+    .profile-section h3 {
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+      font-size: 18px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    .form-group textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    /* シフト希望画面 */
+    .shift-preference-container {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+      padding: 20px;
+    }
+
+    .month-selector {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .month-display {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .month-nav button {
+      background-color: transparent;
+      border: none;
+      font-size: 24px;
+      color: var(--primary-color);
+      cursor: pointer;
+    }
+
+    .shift-calendar {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .shift-calendar th {
+      text-align: center;
+      padding: 10px;
+    }
+
+    .shift-calendar td {
+      border: 1px solid #eee;
+      padding: 12px;
+      text-align: center;
+      position: relative;
+    }
+
+    .shift-calendar .day-number {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      font-size: 14px;
+      color: #666;
+    }
+
+    .day-cell {
+      min-height: 80px;
+      padding-top: 20px;
+    }
+
+    .preference-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .preference-button {
+      border: none;
+      border-radius: 4px;
+      padding: 5px;
+      font-size: 12px;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .available-button {
+      background-color: #e3f8e3;
+      color: var(--success-color);
+    }
+
+    .unavailable-button {
+      background-color: #ffe8e8;
+      color: var(--danger-color);
+    }
+
+    .preferred-button {
+      background-color: #e8f4ff;
+      color: var(--info-color);
+    }
+
+    .preference-button.selected {
+      font-weight: bold;
+      box-shadow: 0 0 0 2px currentColor;
+    }
+
+    .save-preferences {
+      display: block;
+      width: 100%;
+      padding: 12px;
+      margin-top: 20px;
+      background-color: var(--primary-color);
+      color: white;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    .save-preferences:hover {
+      background-color: var(--primary-dark);
+    }
+
+    .preference-legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 20px 0;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .legend-color {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      margin-right: 5px;
+    }
+
+    .legend-available {
+      background-color: #e3f8e3;
+    }
+
+    .legend-unavailable {
+      background-color: #ffe8e8;
+    }
+
+    .legend-preferred {
+      background-color: #e8f4ff;
+    }
+
+    /* 勤務不可日のスタイル */
+    .shift-calendar td {
+      text-align: center;
+      height: 40px;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .shift-calendar td span {
+      display: inline-block;
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      border-radius: 50%;
+    }
+
+    .shift-calendar td.unavailable span {
+      background-color: #ffe8e8;
+      color: #e74c3c;
+      font-weight: bold;
+    }
+
+    .shift-calendar td:hover span {
+      background-color: #f8f9fa;
+    }
+
+    /* 優先度設定のスタイル */
+    .priority-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .priority-item {
+      flex-grow: 1;
+      text-align: center;
+      padding: 10px;
+      background-color: white;
+      border: 1px solid #dee2e6;
+      position: relative;
+    }
+
+    .priority-item.active {
+      background-color: #4b6584;
+      color: white;
+      font-weight: bold;
+    }
+
+    .priority-arrow {
+      font-size: 24px;
+      color: #6c757d;
+      margin: 0 10px;
+    }
+
+    /* タブ内のテーブルスタイル調整 */
+    .tab-pane .table th {
+      background-color: #f8f9fa;
+      font-weight: 600;
+    }
+
+    /* 新しいバッジスタイル */
+    .badge.bg-success {
+      background-color: #27ae60 !important;
+    }
+
+    .badge.bg-warning {
+      background-color: #f1c40f !important;
+    }
+
+    /* レスポンシブ対応 */
+    @media (max-width: 992px) {
+      .sidebar {
+        width: 60px;
+        overflow: hidden;
+      }
+
+      .sidebar .nav-link span {
+        display: none;
+      }
+
+      .sidebar .logo-container {
+        padding: 10px 5px;
+      }
+
+      .sidebar .logo {
+        font-size: 16px;
+      }
+
+      .sidebar .subtitle {
+        display: none;
+      }
+
+      .sidebar .nav-link {
+        padding: 12px 0;
+        text-align: center;
+      }
+
+      .sidebar .nav-link i {
+        margin-right: 0;
+      }
+
+      .main-content {
+        margin-left: 60px;
+      }
+
+      .user-switch {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .user-switch a {
+        width: 100%;
+        text-align: center;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .function-icons {
+        justify-content: center;
+      }
+
+      .function-icon {
+        width: 100px;
+        margin: 0 10px 20px;
+      }
+
+      .profile-header {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      .profile-image-container {
+        margin-right: 0;
+        margin-bottom: 20px;
+      }
+
+      .clock-buttons {
+        flex-direction: column;
+        align-items: center;
+      }
+
+      .clock-button {
+        width: 100%;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .function-icon {
+        width: 70px;
+      }
+
+      .icon-circle {
+        width: 50px;
+        height: 50px;
+        font-size: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- サイドナビゲーション -->
+  <div class="sidebar">
+    <div class="logo-container">
+      <div class="logo">岩井製菓</div>
+      <div class="subtitle">シフト管理システム</div>
+    </div>
+
+    <!-- 管理者向けナビゲーション -->
+    <ul class="nav flex-column" id="adminNav">
+      <li class="nav-item">
+        <a class="nav-link active" href="#dashboard" onclick="showSection('dashboard')">
+          <i class="fas fa-home"></i> <span>ダッシュボード</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#shift-calendar" onclick="showSection('shift-calendar')">
+          <i class="fas fa-calendar-alt"></i> <span>シフト管理</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#employees" onclick="showSection('employees')">
+          <i class="fas fa-users"></i> <span>従業員管理</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#stores" onclick="showSection('stores')">
+          <i class="fas fa-store"></i> <span>店舗管理</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#events-seasonal" onclick="showSection('events-seasonal')">
+          <i class="fas fa-calendar-check"></i> <span>イベント・季節情報</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#settings" onclick="showSection('settings')">
+          <i class="fas fa-cog"></i> <span>設定</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- 従業員向けナビゲーション -->
+    <ul class="nav flex-column" id="employeeNav" style="display: none;">
+      <li class="nav-item">
+        <a class="nav-link" href="#employee-profile" onclick="showSection('employee-profile')">
+          <i class="fas fa-user"></i> <span>プロフィール</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#employee-shift-preference" onclick="showSection('employee-shift-preference')">
+          <i class="fas fa-calendar-check"></i> <span>シフト希望</span>
+        </a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" href="#employee-attendance" onclick="showSection('employee-attendance')">
+          <i class="fas fa-clock"></i> <span>勤怠管理</span>
+        </a>
+      </li>
+    </ul>
+
+    <!-- ユーザー切り替え -->
+    <div class="sidebar-footer">
+      <div class="user-switch">
+        <a href="#" class="active" onclick="switchUserMode('admin')">管理者</a>
+        <a href="#" onclick="switchUserMode('employee')">従業員</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- メインコンテンツ -->
+  <div class="main-content">
+
+    <!-- 管理者ログイン画面 -->
+    <div id="admin-login" class="content-section" style="display: none;">
+      <div class="login-container">
+        <h2>管理者ログイン</h2>
+        <form class="login-form">
+          <div class="form-group">
+            <label for="admin-username">ユーザーID</label>
+            <input type="text" id="admin-username" placeholder="管理者IDを入力">
+          </div>
+          <div class="form-group">
+            <label for="admin-password">パスワード</label>
+            <input type="password" id="admin-password" placeholder="パスワードを入力">
+          </div>
+          <button type="button" onclick="login('admin')">ログイン</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- 従業員ログイン画面 -->
+    <div id="employee-login" class="content-section" style="display: none;">
+      <div class="login-container">
+        <h2>従業員ログイン</h2>
+        <form class="login-form">
+          <div class="form-group">
+            <label for="employee-username">従業員ID</label>
+            <input type="text" id="employee-username" placeholder="従業員IDを入力">
+          </div>
+          <div class="form-group">
+            <label for="employee-password">パスワード</label>
+            <input type="password" id="employee-password" placeholder="パスワードを入力">
+          </div>
+          <button type="button" onclick="login('employee')">ログイン</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- ダッシュボード（管理者） -->
+    <div id="dashboard" class="content-section active">
+      <div class="content-header">
+        <h2><i class="fas fa-home me-2"></i> ダッシュボード</h2>
+      </div>
+
+      <!-- 機能アイコン (ダッシュボードにのみ表示) -->
+      <div class="function-icons">
+        <a href="#shift-calendar" class="function-icon" onclick="showSection('shift-calendar')">
+          <div class="icon-circle">
+            <i class="fas fa-calendar-alt"></i>
+          </div>
+          <p>シフトカレンダー</p>
+        </a>
+        <a href="#employees" class="function-icon" onclick="showSection('employees')">
+          <div class="icon-circle">
+            <i class="fas fa-users"></i>
+          </div>
+          <p>従業員管理</p>
+        </a>
+        <a href="#stores" class="function-icon" onclick="showSection('stores')">
+          <div class="icon-circle">
+            <i class="fas fa-store"></i>
+          </div>
+          <p>店舗管理</p>
+        </a>
+        <a href="#events-seasonal" class="function-icon" onclick="showSection('events-seasonal')">
+          <div class="icon-circle">
+            <i class="fas fa-calendar-check"></i>
+          </div>
+          <p>イベント・季節情報</p>
+        </a>
+        <a href="#settings" class="function-icon" onclick="showSection('settings')">
+          <div class="icon-circle">
+            <i class="fas fa-cog"></i>
+          </div>
+          <p>設定</p>
+        </a>
+      </div>
+
+      <!-- 季節情報カード -->
+      <div class="row">
+        <div class="col-md-6 mb-4">
+          <div class="card seasonal-event-card">
+            <div class="seasonal-event-image"
+              style="background-image: url('https://placehold.jp/7a95b9/ffffff/700x300.png?text=桜の開花状況');">
+              <div class="seasonal-event-overlay">
+                <h5>桜の開花状況</h5>
+                <p class="mb-0">京都各所で開花が進んでいます</p>
+              </div>
+            </div>
+            <div class="seasonal-event-body">
+              <div class="progress-label">
+                <span>開花状況</span>
+                <span>70%</span>
+              </div>
+              <div class="progress seasonal-progress sakura-progress mb-3">
+                <div class="progress-bar" role="progressbar" style="width: 70%" aria-valuenow="70" aria-valuemin="0"
+                  aria-valuemax="100"></div>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>平等院周辺</span>
+                  <small class="text-muted">7分咲き</small>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span>祇園エリア</span>
+                  <small class="text-muted">5分咲き</small>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span>嵐山エリア</span>
+                  <small class="text-muted">見頃</small>
+                </div>
+              </div>
+
+              <button class="btn btn-sm btn-outline-primary" onclick="showSection('events-seasonal')">詳細を見る</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 mb-4">
+          <div class="card seasonal-event-card">
+            <div class="seasonal-event-image"
+              style="background-image: url('https://placehold.jp/7a95b9/ffffff/700x300.png?text=ツツジの開花状況');">
+              <div class="seasonal-event-overlay">
+                <h5>ツツジの開花状況</h5>
+                <p class="mb-0">開花まもなく開始予定</p>
+              </div>
+            </div>
+            <div class="seasonal-event-body">
+              <div class="progress-label">
+                <span>開花状況</span>
+                <span>25%</span>
+              </div>
+              <div class="progress seasonal-progress azalea-progress mb-3">
+                <div class="progress-bar" role="progressbar" style="width: 25%" aria-valuenow="25" aria-valuemin="0"
+                  aria-valuemax="100"></div>
+              </div>
+
+              <div class="mb-3">
+                <div class="d-flex justify-content-between mb-1">
+                  <span>平等院周辺</span>
+                  <small class="text-muted">つぼみ膨らむ</small>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span>京都府立植物園</span>
+                  <small class="text-muted">一部開花</small>
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                  <span>宇治市周辺</span>
+                  <small class="text-muted">つぼみ</small>
+                </div>
+              </div>
+
+              <button class="btn btn-sm btn-outline-primary" onclick="showSection('events-seasonal')">詳細を見る</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- イベントリスト -->
+      <div class="row">
+        <div class="col-12 mb-4">
+          <div class="card">
+            <div class="card-header">近日イベント</div>
+            <div class="card-body">
+              <div class="table-responsive">
+                <table class="table">
+                  <thead>
+                    <tr>
+                      <th>イベント名</th>
+                      <th>日程</th>
+                      <th>影響店舗</th>
+                      <th>来客予測</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>京都さくらまつり</td>
+                      <td>4/20 - 4/25</td>
+                      <td>祇園店, 嵐山店</td>
+                      <td><span class="badge bg-danger">通常の1.8倍</span></td>
+                    </tr>
+                    <tr>
+                      <td>GWフェア</td>
+                      <td>4/29 - 5/5</td>
+                      <td>全店舗</td>
+                      <td><span class="badge bg-danger">通常の2.0倍</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- シフトカレンダー (管理者) -->
+    <div id="shift-calendar" class="content-section">
+      <div class="content-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2><i class="fas fa-calendar-alt me-2"></i> シフト管理</h2>
+          <div>
+            <button class="btn btn-success me-2">
+              <i class="fas fa-magic me-1"></i> シフト自動生成
+            </button>
+            <button class="btn btn-outline-primary">
+              <i class="fas fa-download me-1"></i> エクスポート
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header bg-white">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+              <a class="nav-link active" href="#shift-calendar-tab" data-bs-toggle="tab">シフト表</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#shift-preferences-tab" data-bs-toggle="tab">希望状況</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#attendance-tab" data-bs-toggle="tab">勤怠状況</a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content">
+            <!-- シフト表タブ - 元のシフトカレンダーの内容 -->
+            <div class="tab-pane fade show active" id="shift-calendar-tab">
+              <!-- 元のシフトカレンダーコードをここに移動 -->
+              <div class="row align-items-center mb-3">
+                <div class="col-md-4 mb-2 mb-md-0">
+                  <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-outline-primary"><i class="fas fa-chevron-left"></i></button>
+                    <button type="button" class="btn btn-outline-primary btn-lg px-4">2025年4月</button>
+                    <button type="button" class="btn btn-outline-primary"><i class="fas fa-chevron-right"></i></button>
+                  </div>
+                </div>
+
+                <div class="col-md-8">
+                  <div class="d-flex justify-content-md-end">
+                    <select class="form-select me-2" style="width: auto;">
+                      <option selected>全店舗</option>
+                      <option>本店</option>
+                      <option>二条店</option>
+                      <option>京都駅店</option>
+                      <option>祇園店</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="calendar-wrapper">
+                <!-- シフトカレンダーテーブル -->
+                <!-- 既存のテーブルコード -->
+                <div class="card-body p-0">
+                  <div class="calendar-wrapper">
+                    <table class="table table-bordered shift-calendar mb-0">
+                      <thead>
+                        <tr>
+                          <th class="name-cell">従業員名</th>
+                          <th>1<br><small>月</small></th>
+                          <th>2<br><small>火</small></th>
+                          <th>3<br><small>水</small></th>
+                          <th>4<br><small>木</small></th>
+                          <th>5<br><small>金</small></th>
+                          <th class="weekend">6<br><small>土</small></th>
+                          <th class="weekend">7<br><small>日</small></th>
+                          <th>8<br><small>月</small></th>
+                          <th>9<br><small>火</small></th>
+                          <th>10<br><small>水</small></th>
+                          <th>11<br><small>木</small></th>
+                          <th>12<br><small>金</small></th>
+                          <th class="weekend">13<br><small>土</small></th>
+                          <th class="weekend">14<br><small>日</small></th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                          <td class="name-cell">山田 太郎</td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell weekend"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell weekend"></td>
+                        </tr>
+                        <tr>
+                          <td class="name-cell">佐藤 花子</td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell weekend"></td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell weekend"></td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-2nd">二条店</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="name-cell">鈴木 一郎</td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-3rd">京都駅</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="name-cell">高橋 京子</td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-4th">祇園店</div>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td class="name-cell">中村 健太</td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell"></td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                          <td class="shift-cell weekend">
+                            <div class="shift-assigned shift-honten">本店</div>
+                          </td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 希望状況タブ - 新規追加 -->
+            <div class="tab-pane fade" id="shift-preferences-tab">
+              <!-- 希望状況の内容 - 前回提案した内容 -->
+              <div class="month-selector mb-3">
+                <div class="btn-group">
+                  <button class="btn btn-outline-primary"><i class="fas fa-chevron-left"></i></button>
+                  <button class="btn btn-outline-primary px-4">2025年5月</button>
+                  <button class="btn btn-outline-primary"><i class="fas fa-chevron-right"></i></button>
+                </div>
+              </div>
+
+              <div class="table-responsive">
+                <table class="table table-bordered">
+                  <thead>
+                    <tr>
+                      <th>従業員名</th>
+                      <th>希望提出</th>
+                      <th>希望日数/週</th>
+                      <th>希望曜日</th>
+                      <th>勤務不可日数</th>
+                      <th>特記事項</th>
+                      <th>アクション</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td>山田 太郎</td>
+                      <td><span class="badge bg-success">提出済</span></td>
+                      <td>4日</td>
+                      <td>火・木・金・日</td>
+                      <td>4日（5/1, 5/4, 5/7, 5/15）</td>
+                      <td><button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
+                          data-bs-target="#notesModal">表示</button></td>
+                      <td><button class="btn btn-sm btn-outline-primary">詳細</button></td>
+                    </tr>
+                    <tr>
+                      <td>佐藤 花子</td>
+                      <td><span class="badge bg-success">提出済</span></td>
+                      <td>5日</td>
+                      <td>月・火・水・木・金</td>
+                      <td>2日（5/3, 5/5）</td>
+                      <td><button class="btn btn-sm btn-outline-info" data-bs-toggle="modal"
+                          data-bs-target="#notesModal">表示</button></td>
+                      <td><button class="btn btn-sm btn-outline-primary">詳細</button></td>
+                    </tr>
+                    <tr>
+                      <td>鈴木 一郎</td>
+                      <td><span class="badge bg-warning">未提出</span></td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td>-</td>
+                      <td><button class="btn btn-sm btn-outline-secondary" disabled>詳細</button></td>
+                    </tr>
+                    <!-- 他の従業員も同様に -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <!-- 勤怠状況タブ - 新規追加 -->
+          <div class="tab-pane fade" id="attendance-tab">
+            <!-- 勤怠状況の内容 - 前回提案した内容 -->
+            <div class="d-flex justify-content-between mb-3">
+              <div class="input-group" style="width: auto;">
+                <span class="input-group-text">表示月</span>
+                <select class="form-select">
+                  <option>2025年3月</option>
+                  <option selected>2025年4月</option>
+                  <option>2025年5月</option>
+                </select>
+              </div>
+              <button class="btn btn-outline-primary">
+                <i class="fas fa-download me-1"></i> レポート出力
+              </button>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead>
+                  <tr>
+                    <th>従業員名</th>
+                    <th>出勤日数</th>
+                    <th>総勤務時間</th>
+                    <th>遅刻回数</th>
+                    <th>早退回数</th>
+                    <th>休憩取得率</th>
+                    <th>アクション</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>山田 太郎</td>
+                    <td>15日/20日</td>
+                    <td>120時間</td>
+                    <td>0回</td>
+                    <td>1回</td>
+                    <td>95%</td>
+                    <td><button class="btn btn-sm btn-outline-primary">詳細</button></td>
+                  </tr>
+                  <tr>
+                    <td>佐藤 花子</td>
+                    <td>18日/20日</td>
+                    <td>142時間</td>
+                    <td>1回</td>
+                    <td>0回</td>
+                    <td>100%</td>
+                    <td><button class="btn btn-sm btn-outline-primary">詳細</button></td>
+                  </tr>
+                  <!-- 他の従業員も同様に -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 従業員管理 -->
+    <div id="employees" class="content-section">
+      <div class="content-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2><i class="fas fa-users me-2"></i> 従業員管理</h2>
+          <div>
+            <button class="btn btn-primary">
+              <i class="fas fa-plus me-1"></i> 従業員追加
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header bg-white">
+          <div class="row">
+            <div class="col-md-6 mb-2 mb-md-0">
+              <div class="input-group">
+                <span class="input-group-text"><i class="fas fa-search"></i></span>
+                <input type="text" class="form-control" placeholder="従業員を検索...">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-body p-0">
+          <div class="table-responsive">
+            <table class="table table-hover mb-0">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>名前</th>
+                  <th>雇用形態</th>
+                  <th>希望日数</th>
+                  <th>スキルレベル</th>
+                  <th>人間関係制約</th>
+                  <th>アクション</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>E001</td>
+                  <td>山田 太郎</td>
+                  <td><span class="badge bg-primary">正社員</span></td>
+                  <td>週5日</td>
+                  <td>
+                    <div class="skills-display">
+                      <div class="skill-box kitchen-skill">
+                        <span class="skill-name">厨房</span>
+                        <span class="skill-value">A</span>
+                      </div>
+                      <div class="skill-box hall-skill">
+                        <span class="skill-name">ホール</span>
+                        <span class="skill-value">B</span>
+                      </div>
+                      <div class="skill-box sales-skill">
+                        <span class="skill-name">販売</span>
+                        <span class="skill-value">A</span>
+                      </div>
+                      <div class="skill-box overall-skill">
+                        <span class="skill-name">総合</span>
+                        <span class="skill-value">A</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>鈴木一郎</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>E002</td>
+                  <td>佐藤 花子</td>
+                  <td><span class="badge bg-primary">正社員</span></td>
+                  <td>週5日</td>
+                  <td>
+                    <div class="skills-display">
+                      <div class="skill-box kitchen-skill">
+                        <span class="skill-name">厨房</span>
+                        <span class="skill-value">C</span>
+                      </div>
+                      <div class="skill-box hall-skill">
+                        <span class="skill-name">ホール</span>
+                        <span class="skill-value">A</span>
+                      </div>
+                      <div class="skill-box sales-skill">
+                        <span class="skill-name">販売</span>
+                        <span class="skill-value">A</span>
+                      </div>
+                      <div class="skill-box overall-skill">
+                        <span class="skill-name">総合</span>
+                        <span class="skill-value">B</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>高橋京子</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+                <tr>
+                  <td>E003</td>
+                  <td>鈴木 一郎</td>
+                  <td><span class="badge bg-info">派遣社員</span></td>
+                  <td>週4日</td>
+                  <td>
+                    <div class="skills-display">
+                      <div class="skill-box kitchen-skill">
+                        <span class="skill-name">厨房</span>
+                        <span class="skill-value">A</span>
+                      </div>
+                      <div class="skill-box hall-skill">
+                        <span class="skill-name">ホール</span>
+                        <span class="skill-value">C</span>
+                      </div>
+                      <div class="skill-box sales-skill">
+                        <span class="skill-name">販売</span>
+                        <span class="skill-value">B</span>
+                      </div>
+                      <div class="skill-box overall-skill">
+                        <span class="skill-name">総合</span>
+                        <span class="skill-value">B</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>山田太郎</td>
+                  <td>
+                    <button class="btn btn-sm btn-outline-primary me-1"><i class="fas fa-edit"></i></button>
+                    <button class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 店舗管理 -->
+    <div id="stores" class="content-section">
+      <div class="content-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2><i class="fas fa-store me-2"></i> 店舗管理</h2>
+          <div>
+            <button class="btn btn-primary">
+              <i class="fas fa-plus me-1"></i> 店舗追加
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>本店</span>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>編集</a></li>
+                  <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>削除</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>京都市中京区●●</p>
+              <p class="card-text"><i class="fas fa-phone me-2"></i>075-XXX-XXXX</p>
+
+              <h6 class="mt-4 mb-2">必要スキル（平日）</h6>
+              <div>
+                <div class="mb-2">
+                  <span>厨房:</span> A×1名, B×2名
+                </div>
+                <div class="mb-2">
+                  <span>ホール:</span> A×1名, B×2名
+                </div>
+                <div class="mb-2">
+                  <span>販売:</span> A×1名, B×1名
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-white">
+              <button class="btn btn-sm btn-outline-primary w-100">詳細設定</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>二条店</span>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>編集</a></li>
+                  <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>削除</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>京都市上京区●●</p>
+              <p class="card-text"><i class="fas fa-phone me-2"></i>075-XXX-XXXX</p>
+
+              <h6 class="mt-4 mb-2">必要スキル（平日）</h6>
+              <div>
+                <div class="mb-2">
+                  <span>厨房:</span> A×1名, B×1名
+                </div>
+                <div class="mb-2">
+                  <span>ホール:</span> A×0名, B×1名
+                </div>
+                <div class="mb-2">
+                  <span>販売:</span> A×1名, B×0名
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-white">
+              <button class="btn btn-sm btn-outline-primary w-100">詳細設定</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>京都駅店</span>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>編集</a></li>
+                  <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>削除</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>京都市下京区●●</p>
+              <p class="card-text"><i class="fas fa-phone me-2"></i>075-XXX-XXXX</p>
+
+              <h6 class="mt-4 mb-2">必要スキル（平日）</h6>
+              <div>
+                <div class="mb-2">
+                  <span>厨房:</span> A×2名, B×1名
+                </div>
+                <div class="mb-2">
+                  <span>ホール:</span> A×1名, B×2名
+                </div>
+                <div class="mb-2">
+                  <span>販売:</span> A×1名, B×1名
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-white">
+              <button class="btn btn-sm btn-outline-primary w-100">詳細設定</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 mb-4">
+          <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>祇園店</span>
+              <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                  data-bs-toggle="dropdown">
+                  <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                  <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>編集</a></li>
+                  <li><a class="dropdown-item text-danger" href="#"><i class="fas fa-trash me-2"></i>削除</a></li>
+                </ul>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text"><i class="fas fa-map-marker-alt me-2"></i>京都市東山区●●</p>
+              <p class="card-text"><i class="fas fa-phone me-2"></i>075-XXX-XXXX</p>
+
+              <h6 class="mt-4 mb-2">必要スキル（平日）</h6>
+              <div>
+                <div class="mb-2">
+                  <span>厨房:</span> A×1名, B×1名
+                </div>
+                <div class="mb-2">
+                  <span>ホール:</span> A×0名, B×1名
+                </div>
+                <div class="mb-2">
+                  <span>販売:</span> A×1名, B×1名
+                </div>
+              </div>
+            </div>
+            <div class="card-footer bg-white">
+              <button class="btn btn-sm btn-outline-primary w-100">詳細設定</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- イベント・季節情報 -->
+    <div id="events-seasonal" class="content-section">
+      <div class="content-header">
+        <div class="d-flex justify-content-between align-items-center">
+          <h2><i class="fas fa-calendar-check me-2"></i> イベント・季節情報</h2>
+          <div>
+            <button class="btn btn-primary">
+              <i class="fas fa-plus me-1"></i> 新規追加
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header bg-white">
+          <ul class="nav nav-tabs card-header-tabs">
+            <li class="nav-item">
+              <a class="nav-link active" href="#events-tab" data-bs-toggle="tab">イベント管理</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="#seasonal-tab" data-bs-toggle="tab">季節情報</a>
+            </li>
+          </ul>
+        </div>
+        <div class="card-body">
+          <div class="tab-content">
+            <!-- イベント管理タブ -->
+            <div class="tab-pane fade show active" id="events-tab">
+              <div class="list-group list-group-flush">
+                <div class="list-group-item p-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-1">京都さくらまつり</h5>
+                    <span class="badge bg-warning">来週</span>
+                  </div>
+                  <p class="text-muted mb-2">4/20 - 4/25</p>
+                  <p class="mb-2">祇園店, 嵐山店に影響</p>
+                  <p class="mb-1"><strong>来客予測:</strong> <span class="text-danger">通常の1.8倍</span></p>
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary me-1">
+                      <i class="fas fa-edit"></i> 編集
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger">
+                      <i class="fas fa-trash"></i> 削除
+                    </button>
+                  </div>
+                </div>
+
+                <div class="list-group-item p-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-1">GWフェア</h5>
+                    <span class="badge bg-info">2週間後</span>
+                  </div>
+                  <p class="text-muted mb-2">4/29 - 5/5</p>
+                  <p class="mb-2">全店舗に影響</p>
+                  <p class="mb-1"><strong>来客予測:</strong> <span class="text-danger">通常の2.0倍</span></p>
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary me-1">
+                      <i class="fas fa-edit"></i> 編集
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger">
+                      <i class="fas fa-trash"></i> 削除
+                    </button>
+                  </div>
+                </div>
+
+                <div class="list-group-item p-3">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-1">京都マラソン</h5>
+                    <span class="badge bg-secondary">1ヶ月後</span>
+                  </div>
+                  <p class="text-muted mb-2">5/15</p>
+                  <p class="mb-2">京都駅店, 本店に影響</p>
+                  <p class="mb-1"><strong>来客予測:</strong> <span class="text-danger">通常の1.5倍</span></p>
+                  <div class="mt-2">
+                    <button class="btn btn-sm btn-outline-primary me-1">
+                      <i class="fas fa-edit"></i> 編集
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger">
+                      <i class="fas fa-trash"></i> 削除
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 季節情報タブ -->
+            <div class="tab-pane fade" id="seasonal-tab">
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5>桜の開花状況</h5>
+                  <span class="badge bg-danger">見頃間近</span>
+                </div>
+
+                <div class="table-responsive mb-3">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>エリア</th>
+                        <th>状況</th>
+                        <th>見頃予想</th>
+                        <th>更新日</th>
+                        <th>アクション</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>平等院周辺</td>
+                        <td>7分咲き</td>
+                        <td>4/17 - 4/24</td>
+                        <td>4/15</td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary">編集</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>祇園エリア</td>
+                        <td>5分咲き</td>
+                        <td>4/18 - 4/25</td>
+                        <td>4/15</td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary">編集</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>嵐山エリア</td>
+                        <td>見頃</td>
+                        <td>4/14 - 4/21</td>
+                        <td>4/15</td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary">編集</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <h5>ツツジの開花状況</h5>
+                  <span class="badge bg-info">まもなく開花</span>
+                </div>
+
+                <div class="table-responsive mb-3">
+                  <table class="table table-bordered">
+                    <thead>
+                      <tr>
+                        <th>エリア</th>
+                        <th>状況</th>
+                        <th>見頃予想</th>
+                        <th>更新日</th>
+                        <th>アクション</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>平等院周辺</td>
+                        <td>つぼみ膨らむ</td>
+                        <td>4/28 - 5/8</td>
+                        <td>4/15</td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary">編集</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>京都府立植物園</td>
+                        <td>一部開花</td>
+                        <td>4/25 - 5/5</td>
+                        <td>4/15</td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary">編集</button>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td>宇治市周辺</td>
+                        <td>つぼみ</td>
+                        <td>4/29 - 5/10</td>
+                        <td>4/15</td>
+                        <td>
+                          <button class="btn btn-sm btn-outline-primary">編集</button>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 設定画面 -->
+    <div id="settings" class="content-section">
+      <div class="content-header">
+        <h2><i class="fas fa-cog me-2"></i> システム設定</h2>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">シフト生成設定</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">制約優先順位</label>
+                <div class="input-group mb-2">
+                  <span class="input-group-text">1.</span>
+                  <input type="text" class="form-control" value="人間関係の問題" readonly>
+                </div>
+                <div class="input-group mb-2">
+                  <span class="input-group-text">2.</span>
+                  <input type="text" class="form-control" value="店舗ごとの満たすべきスキル">
+                </div>
+                <div class="input-group mb-2">
+                  <span class="input-group-text">3.</span>
+                  <input type="text" class="form-control" value="希望勤務日数">
+                </div>
+                <div class="input-group mb-2">
+                  <span class="input-group-text">4.</span>
+                  <input type="text" class="form-control" value="勤務の均等分配">
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">シフト表示設定</label>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" checked>
+                  <label class="form-check-label">スキルレベルを表示</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" checked>
+                  <label class="form-check-label">部署を色分け表示</label>
+                </div>
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" checked>
+                  <label class="form-check-label">店舗ごとに色分け</label>
+                </div>
+              </div>
+
+              <button class="btn btn-primary">設定を保存</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="card mb-4">
+            <div class="card-header">
+              <h5 class="mb-0">AIアシスタント設定</h5>
+            </div>
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">API設定</label>
+                <div class="input-group mb-2">
+                  <span class="input-group-text">API Key</span>
+                  <input type="password" class="form-control" value="sk-xxxxxxxxxxxxxxxxxxxxx">
+                  <button class="btn btn-outline-secondary">表示</button>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label class="form-label">パーソナライズ設定</label>
+                <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" checked>
+                  <label class="form-check-label">シフト情報へのアクセスを許可</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" checked>
+                  <label class="form-check-label">季節情報へのアクセスを許可</label>
+                </div>
+                <div class="form-check form-switch mb-2">
+                  <input class="form-check-input" type="checkbox" checked>
+                  <label class="form-check-label">外部情報の検索を許可</label>
+                </div>
+              </div>
+
+              <button class="btn btn-primary">設定を保存</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 従業員プロフィール画面 -->
+    <div id="employee-profile" class="content-section">
+      <div class="content-header">
+        <h2><i class="fas fa-user me-2"></i> プロフィール</h2>
+      </div>
+
+      <div class="profile-container">
+        <div class="profile-header">
+          <div class="profile-image-container">
+            <img src="https://placehold.jp/150x150.png" class="profile-image" alt="プロフィール画像">
+            <div class="profile-image-edit">
+              <i class="fas fa-camera"></i>
+            </div>
+          </div>
+          <div>
+            <h3 class="profile-name">鈴木 一郎</h3>
+            <p class="profile-position">厨房スタッフ</p>
+          </div>
+        </div>
+
+        <div class="profile-details">
+          <div class="profile-section">
+            <h3>基本情報</h3>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="last-name-kanji">姓（漢字）</label>
+                  <input type="text" id="last-name-kanji" value="鈴木" class="form-control">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="first-name-kanji">名（漢字）</label>
+                  <input type="text" id="first-name-kanji" value="一郎" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="last-name-kana">姓（カナ）</label>
+                  <input type="text" id="last-name-kana" value="スズキ" class="form-control">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="first-name-kana">名（カナ）</label>
+                  <input type="text" id="first-name-kana" value="イチロウ" class="form-control">
+                </div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="nickname">ニックネーム</label>
+              <input type="text" id="nickname" value="イチロー" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="birthdate">生年月日</label>
+              <input type="date" id="birthdate" value="1990-05-10" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="gender">性別</label>
+              <select id="gender" class="form-control">
+                <option value="male" selected>男性</option>
+                <option value="female">女性</option>
+                <option value="other">その他</option>
+                <option value="no-answer">回答しない</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h3>連絡先情報</h3>
+            <div class="form-group">
+              <label for="email">メールアドレス</label>
+              <input type="email" id="email" value="ichiro.suzuki@example.com" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="phone">電話番号</label>
+              <input type="tel" id="phone" value="090-1234-5678" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="address">住所</label>
+              <input type="text" id="address" value="京都市中京区烏丸通御池上ル" class="form-control">
+            </div>
+            <div class="form-group">
+              <label for="emergency-contact">緊急連絡先</label>
+              <input type="text" id="emergency-contact" value="鈴木花子（母）: 090-8765-4321" class="form-control">
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h3>勤務情報</h3>
+            <div class="form-group">
+              <label for="employee-id">従業員ID</label>
+              <input type="text" id="employee-id" value="E003" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="position">職位</label>
+              <input type="text" id="position" value="厨房スタッフ" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="employment-type">雇用形態</label>
+              <input type="text" id="employment-type" value="派遣社員" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="join-date">入社日</label>
+              <input type="date" id="join-date" value="2023-01-15" class="form-control" readonly>
+            </div>
+            <div class="form-group">
+              <label for="desired-work-days">希望勤務日数（週）</label>
+              <select id="desired-work-days" class="form-control">
+                <option value="1">1日</option>
+                <option value="2">2日</option>
+                <option value="3">3日</option>
+                <option value="4" selected>4日</option>
+                <option value="5">5日</option>
+                <option value="6">6日</option>
+                <option value="7">7日</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="profile-section">
+            <h3>特記事項</h3>
+            <div class="form-group">
+              <label for="special-notes">特記事項</label>
+              <textarea id="special-notes" class="form-control" rows="4">厨房での経験が豊富。和菓子の製造スキルが高い。</textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="text-center mt-4">
+          <button class="btn btn-primary" style="width: 200px;">プロフィールを更新</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 従業員シフト希望画面 -->
+    <div id="employee-shift-preference" class="content-section">
+      <div class="content-header">
+        <h2><i class="fas fa-calendar-check me-2"></i> シフト希望</h2>
+      </div>
+
+      <div class="shift-preference-container">
+        <div class="month-selector">
+          <div class="month-nav">
+            <button><i class="fas fa-chevron-left"></i></button>
+          </div>
+          <div class="month-display">2025年5月</div>
+          <div class="month-nav">
+            <button><i class="fas fa-chevron-right"></i></button>
+          </div>
+        </div>
+
+        <!-- 週単位の希望設定 -->
+        <div class="card mb-4">
+          <div class="card-header">基本希望設定</div>
+          <div class="card-body">
+            <div class="form-group mb-3">
+              <label for="desired-days" class="form-label">希望勤務日数（週）</label>
+              <select id="desired-days" class="form-select">
+                <option value="1">1日</option>
+                <option value="2">2日</option>
+                <option value="3">3日</option>
+                <option value="4" selected>4日</option>
+                <option value="5">5日</option>
+                <option value="6">6日</option>
+                <option value="7">7日</option>
+              </select>
+            </div>
+
+            <div class="form-group mb-3">
+              <label class="form-label">希望曜日（複数選択可）</label>
+              <div class="weekday-selection">
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="monday" value="monday">
+                  <label class="form-check-label" for="monday">月</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="tuesday" value="tuesday" checked>
+                  <label class="form-check-label" for="tuesday">火</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="wednesday" value="wednesday">
+                  <label class="form-check-label" for="wednesday">水</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="thursday" value="thursday" checked>
+                  <label class="form-check-label" for="thursday">木</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="friday" value="friday" checked>
+                  <label class="form-check-label" for="friday">金</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="saturday" value="saturday">
+                  <label class="form-check-label" for="saturday">土</label>
+                </div>
+                <div class="form-check form-check-inline">
+                  <input class="form-check-input" type="checkbox" id="sunday" value="sunday" checked>
+                  <label class="form-check-label" for="sunday">日</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 勤務不可日の選択 -->
+        <div class="card mb-4">
+          <div class="card-header">勤務不可日の選択</div>
+          <div class="card-body">
+            <p class="text-muted mb-3">カレンダーで勤務できない日を選択してください</p>
+
+            <div class="table-responsive">
+              <table class="table table-bordered shift-calendar">
+                <thead>
+                  <tr>
+                    <th>日</th>
+                    <th>月</th>
+                    <th>火</th>
+                    <th>水</th>
+                    <th>木</th>
+                    <th>金</th>
+                    <th>土</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <!-- 日付セルは以前より簡略化、クリックするだけで勤務不可を設定可能 -->
+                  <tr>
+                    <td class="unavailable"><span>1</span></td>
+                    <td><span>2</span></td>
+                    <td><span>3</span></td>
+                    <td class="unavailable"><span>4</span></td>
+                    <td><span>5</span></td>
+                    <td><span>6</span></td>
+                    <td class="unavailable"><span>7</span></td>
+                  </tr>
+                  <!-- 他の週も同様に -->
+                </tbody>
+              </table>
+            </div>
+
+            <p class="text-muted mt-2">
+              <i class="fas fa-info-circle me-1"></i> 日付をクリックすると勤務不可日として設定できます
+            </p>
+          </div>
+        </div>
+
+        <!-- 特記事項 -->
+        <div class="card mb-4">
+          <div class="card-header">特記事項</div>
+          <div class="card-body">
+            <div class="form-group">
+              <label for="special-notes" class="form-label">シフト調整で考慮してほしい事項</label>
+              <textarea id="special-notes" class="form-control" rows="4"
+                placeholder="例: 土曜日の午後は習い事があります。5/10は家族の用事があるため午前中のみ勤務可能です。"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary w-100">シフト希望を保存</button>
+      </div>
+    </div>
+
+    <!-- 従業員勤怠管理画面 -->
+    <div id="employee-attendance" class="content-section">
+      <div class="content-header">
+        <h2><i class="fas fa-clock me-2"></i> 勤怠管理</h2>
+      </div>
+
+      <div class="attendance-clock-container">
+        <div class="current-date">2025年4月16日 火曜日</div>
+        <div class="current-time" id="current-time">12:34:56</div>
+
+        <div class="clock-buttons">
+          <button class="clock-button clock-in-button" id="clockInButton">
+            <i class="fas fa-sign-in-alt me-2"></i> 出勤
+          </button>
+          <button class="clock-button clock-out-button" id="clockOutButton" disabled>
+            <i class="fas fa-sign-out-alt me-2"></i> 退勤
+          </button>
+          <button class="clock-button break-start-button" id="breakStartButton" disabled>
+            <i class="fas fa-coffee me-2"></i> 休憩開始
+          </button>
+          <button class="clock-button break-end-button" id="breakEndButton" disabled>
+            <i class="fas fa-mug-hot me-2"></i> 休憩終了
+          </button>
+        </div>
+
+        <div class="attendance-log">
+          <h3>本日の勤怠記録</h3>
+          <div class="log-item">
+            <span class="log-type">出勤</span>
+            <span class="log-time">2025/04/16 08:30:15</span>
+          </div>
+          <div class="log-item">
+            <span class="log-type">休憩開始</span>
+            <span class="log-time">2025/04/16 10:45:22</span>
+          </div>
+          <div class="log-item">
+            <span class="log-type">休憩終了</span>
+            <span class="log-time">2025/04/16 11:15:48</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 従業員勤怠管理画面の改善 -->
+      <div class="card mt-4">
+        <div class="card-header">今月のシフト予定</div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>勤務時間</th>
+                  <th>勤務店舗</th>
+                  <th>備考</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>4/16 (火)</td>
+                  <td>8:30 - 17:30</td>
+                  <td>本店</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>4/18 (木)</td>
+                  <td>9:00 - 18:00</td>
+                  <td>本店</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>4/21 (日)</td>
+                  <td>10:00 - 19:00</td>
+                  <td>祇園店</td>
+                  <td>桜まつり対応</td>
+                </tr>
+                <tr>
+                  <td>4/22 (月)</td>
+                  <td>8:30 - 17:30</td>
+                  <td>本店</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>4/25 (木)</td>
+                  <td>9:00 - 18:00</td>
+                  <td>二条店</td>
+                  <td></td>
+                </tr>
+                <tr>
+                  <td>4/29 (月)</td>
+                  <td>10:00 - 19:00</td>
+                  <td>京都駅店</td>
+                  <td>GWフェア対応</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mt-4">
+        <div class="card-header">今月の勤務実績</div>
+        <div class="card-body">
+          <div class="table-responsive">
+            <table class="table table-bordered">
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>出勤時間</th>
+                  <th>退勤時間</th>
+                  <th>休憩時間</th>
+                  <th>勤務時間</th>
+                  <th>勤務店舗</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>4/1 (月)</td>
+                  <td>8:30</td>
+                  <td>17:45</td>
+                  <td>1:00</td>
+                  <td>8:15</td>
+                  <td>本店</td>
+                </tr>
+                <tr>
+                  <td>4/2 (火)</td>
+                  <td>9:15</td>
+                  <td>18:30</td>
+                  <td>1:00</td>
+                  <td>8:15</td>
+                  <td>本店</td>
+                </tr>
+                <tr>
+                  <td>4/5 (金)</td>
+                  <td>8:45</td>
+                  <td>17:30</td>
+                  <td>1:00</td>
+                  <td>7:45</td>
+                  <td>本店</td>
+                </tr>
+                <tr>
+                  <td>4/6 (土)</td>
+                  <td>10:00</td>
+                  <td>19:15</td>
+                  <td>1:00</td>
+                  <td>8:15</td>
+                  <td>京都駅店</td>
+                </tr>
+                <tr>
+                  <td>4/8 (月)</td>
+                  <td>8:30</td>
+                  <td>17:45</td>
+                  <td>1:00</td>
+                  <td>8:15</td>
+                  <td>本店</td>
+                </tr>
+                <tr>
+                  <td>4/9 (火)</td>
+                  <td>9:15</td>
+                  <td>18:30</td>
+                  <td>1:00</td>
+                  <td>8:15</td>
+                  <td>本店</td>
+                </tr>
+                <tr>
+                  <td>4/12 (金)</td>
+                  <td>8:45</td>
+                  <td>17:30</td>
+                  <td>1:00</td>
+                  <td>7:45</td>
+                  <td>祇園店</td>
+                </tr>
+                <tr>
+                  <td>4/13 (土)</td>
+                  <td>10:00</td>
+                  <td>19:15</td>
+                  <td>1:00</td>
+                  <td>8:15</td>
+                  <td>京都駅店</td>
+                </tr>
+                <tr>
+                  <td>4/16 (火)</td>
+                  <td>8:30</td>
+                  <td>-</td>
+                  <td>0:30</td>
+                  <td>-</td>
+                  <td>本店</td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr class="table-secondary">
+                  <th colspan="4" class="text-end">合計勤務時間：</th>
+                  <th>64:45</th>
+                  <th></th>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AIアシスタントボタン -->
+  <div class="ai-assistant-button" onclick="toggleAssistant()">
+    <i class="fas fa-robot fa-lg"></i>
+  </div>
+
+  <!-- AIアシスタントウィンドウ -->
+  <div class="ai-assistant-window" id="assistantWindow" style="display: none;">
+    <div class="ai-assistant-header">
+      <div>
+        <i class="fas fa-robot me-2"></i> AIアシスタント
+      </div>
+      <div style="cursor: pointer;" onclick="toggleAssistant()">
+        <i class="fas fa-times"></i>
+      </div>
+    </div>
+    <div class="ai-assistant-body" id="assistantBody">
+      <div class="message message-ai">
+        こんにちは、岩井製菓のAIアシスタントです。シフト情報や季節の開花状況などについてお気軽にお尋ねください。
+      </div>
+      <div class="message message-user">
+        シフト希望の入力方法を教えてください
+      </div>
+      <div class="message message-ai">
+        シフト希望の入力は、サイドバーの「シフト希望」をクリックすると表示されるカレンダーから行えます。各日付に対して「勤務可能」「勤務不可」「勤務希望」のいずれかを選択してください。月末までに入力を完了し、「シフト希望を保存」ボタンを押してください。来月のシフト作成時に考慮されます。
+      </div>
+    </div>
+    <div class="ai-assistant-footer">
+      <input type="text" class="ai-assistant-input" placeholder="質問を入力してください...">
+      <div class="ai-assistant-send">
+        <i class="fas fa-paper-plane"></i>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // コンテンツセクションの表示切り替え
+    function showSection(sectionId) {
+      // すべてのセクションを非表示
+      document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+      });
+
+      // 選択されたセクションを表示
+      document.getElementById(sectionId).classList.add('active');
+
+      // サイドナビのアクティブ状態を更新
+      document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      document.querySelector(`.sidebar .nav-link[href="#${sectionId}"]`).classList.add('active');
+    }
+
+    // AIアシスタントの表示・非表示を切り替える
+    let isAssistantVisible = false;
+    function toggleAssistant() {
+      isAssistantVisible = !isAssistantVisible;
+
+      if (isAssistantVisible) {
+        document.getElementById('assistantWindow').style.display = 'flex';
+        setTimeout(() => {
+          document.querySelector('.ai-assistant-input').focus();
+        }, 100);
+      } else {
+        document.getElementById('assistantWindow').style.display = 'none';
+      }
+    }
+
+    // AIアシスタントへの質問送信
+    document.querySelector('.ai-assistant-send').addEventListener('click', function () {
+      const input = document.querySelector('.ai-assistant-input');
+      const message = input.value.trim();
+      const body = document.getElementById('assistantBody');
+
+      if (message !== '') {
+        // ユーザーメッセージを追加
+        const userMessage = document.createElement('div');
+        userMessage.className = 'message message-user';
+        userMessage.textContent = message;
+        body.appendChild(userMessage);
+
+        // 入力欄をクリア
+        input.value = '';
+
+        // スクロールを一番下に
+        body.scrollTop = body.scrollHeight;
+
+        // シンプルな応答を生成
+        setTimeout(() => {
+          const aiMessage = document.createElement('div');
+          aiMessage.className = 'message message-ai';
+
+          if (message.includes('シフト') || message.includes('勤務')) {
+            aiMessage.innerHTML = 'シフト情報や勤務に関するご質問ですね。現在のシフト情報は「シフトカレンダー」から確認できます。次月のシフト希望は「シフト希望」から入力可能です。';
+          } else if (message.includes('勤怠') || message.includes('打刻')) {
+            aiMessage.innerHTML = '勤怠管理では、出勤・退勤の打刻や休憩時間の記録ができます。「勤怠管理」画面から操作してください。';
+          } else if (message.includes('プロフィール')) {
+            aiMessage.innerHTML = 'プロフィール情報は「プロフィール」画面から確認・更新できます。個人情報や連絡先などを最新の状態に保つようにしてください。';
+          } else {
+            aiMessage.innerHTML = 'ご質問ありがとうございます。より具体的なお手伝いが必要でしたら、シフト、勤怠、プロフィールなどについてお尋ねください。';
+          }
+
+          body.appendChild(aiMessage);
+          body.scrollTop = body.scrollHeight;
+        }, 500);
+      }
+    });
+
+    // エンターキーでの送信
+    document.querySelector('.ai-assistant-input').addEventListener('keypress', function (e) {
+      if (e.key === 'Enter') {
+        document.querySelector('.ai-assistant-send').click();
+      }
+    });
+
+    // シフト希望ボタンの選択処理
+    document.querySelectorAll('.preference-button').forEach(button => {
+      button.addEventListener('click', function () {
+        // 同じグループ内の他のボタンから選択状態を削除
+        const parentButtons = this.parentElement.querySelectorAll('.preference-button');
+        parentButtons.forEach(btn => btn.classList.remove('selected'));
+
+        // クリックされたボタンを選択状態に
+        this.classList.add('selected');
+      });
+    });
+
+    // 現在時刻の表示と更新
+    function updateClock() {
+      const now = new Date();
+      const timeDisplay = document.getElementById('current-time');
+      if (timeDisplay) {
+        timeDisplay.textContent = now.toLocaleTimeString('ja-JP');
+      }
+    }
+
+    // 1秒ごとに時計を更新
+    setInterval(updateClock, 1000);
+    updateClock(); // 初期表示
+
+    // 勤怠ボタンの制御
+    const clockInButton = document.getElementById('clockInButton');
+    const clockOutButton = document.getElementById('clockOutButton');
+    const breakStartButton = document.getElementById('breakStartButton');
+    const breakEndButton = document.getElementById('breakEndButton');
+
+    if (clockInButton) {
+      clockInButton.addEventListener('click', function () {
+        this.disabled = true;
+        clockOutButton.disabled = false;
+        breakStartButton.disabled = false;
+
+        // 出勤記録をログに追加
+        const now = new Date();
+        addAttendanceLog('出勤', now);
+      });
+    }
+
+    if (breakStartButton) {
+      breakStartButton.addEventListener('click', function () {
+        this.disabled = true;
+        breakEndButton.disabled = false;
+        clockOutButton.disabled = true;
+
+        // 休憩開始記録をログに追加
+        const now = new Date();
+        addAttendanceLog('休憩開始', now);
+      });
+    }
+
+    if (breakEndButton) {
+      breakEndButton.addEventListener('click', function () {
+        this.disabled = true;
+        breakStartButton.disabled = false;
+        clockOutButton.disabled = false;
+
+        // 休憩終了記録をログに追加
+        const now = new Date();
+        addAttendanceLog('休憩終了', now);
+      });
+    }
+
+    if (clockOutButton) {
+      clockOutButton.addEventListener('click', function () {
+        this.disabled = true;
+        clockInButton.disabled = false;
+        breakStartButton.disabled = true;
+        breakEndButton.disabled = true;
+
+        // 退勤記録をログに追加
+        const now = new Date();
+        addAttendanceLog('退勤', now);
+      });
+    }
+
+    // 勤怠ログを追加する関数
+    function addAttendanceLog(type, time) {
+      const logContainer = document.querySelector('.attendance-log');
+      if (!logContainer) return;
+
+      const logItem = document.createElement('div');
+      logItem.className = 'log-item';
+
+      const typeSpan = document.createElement('span');
+      typeSpan.className = 'log-type';
+      typeSpan.textContent = type;
+
+      const timeSpan = document.createElement('span');
+      timeSpan.className = 'log-time';
+      timeSpan.textContent = time.toLocaleString('ja-JP');
+
+      logItem.appendChild(typeSpan);
+      logItem.appendChild(timeSpan);
+
+      // 最新のログを上に表示
+      const firstLogItem = logContainer.querySelector('.log-item');
+      if (firstLogItem) {
+        logContainer.insertBefore(logItem, firstLogItem);
+      } else {
+        logContainer.appendChild(logItem);
+      }
+    }
+
+    // ユーザーモード切り替え
+    function switchUserMode(mode) {
+      const adminNav = document.getElementById('adminNav');
+      const employeeNav = document.getElementById('employeeNav');
+      const userSwitchLinks = document.querySelectorAll('.user-switch a');
+
+      if (mode === 'admin') {
+        adminNav.style.display = 'block';
+        employeeNav.style.display = 'none';
+        showSection('dashboard');
+      } else if (mode === 'employee') {
+        adminNav.style.display = 'none';
+        employeeNav.style.display = 'block';
+        showSection('employee-profile');
+      }
+
+      // アクティブなリンクを更新
+      userSwitchLinks.forEach(link => {
+        link.classList.remove('active');
+      });
+      document.querySelector(`.user-switch a[onclick="switchUserMode('${mode}')"]`).classList.add('active');
+    }
+
+    // ページ内リンクのデフォルト動作をキャンセル
+    document.querySelectorAll('.sidebar .nav-link').forEach(link => {
+      link.addEventListener('click', function (e) {
+        e.preventDefault();
+      });
+    });
+
+    // ログインボタンの追加
+    function login(userType) {
+      document.getElementById(`${userType}-login`).style.display = 'none';
+
+      if (userType === 'admin') {
+        showSection('dashboard');
+      } else if (userType === 'employee') {
+        switchUserMode('employee');
+        showSection('employee-profile');
+      }
+    }
+
+    // 勤務不可日選択の処理
+    document.querySelectorAll('.shift-calendar td').forEach(cell => {
+      if (cell.textContent.trim() !== '') { // 空セルは除外
+        cell.addEventListener('click', function () {
+          this.classList.toggle('unavailable');
+        });
+      }
+    });
+
+    // タブ切り替え処理
+    document.querySelectorAll('.nav-tabs .nav-link').forEach(tabLink => {
+      tabLink.addEventListener('click', function (e) {
+        e.preventDefault();
+        const targetId = this.getAttribute('href').substring(1);
+
+        // タブの切り替え
+        document.querySelectorAll('.nav-tabs .nav-link').forEach(link => {
+          link.classList.remove('active');
+        });
+        this.classList.add('active');
+
+        // タブコンテンツの切り替え
+        document.querySelectorAll('.tab-pane').forEach(pane => {
+          pane.classList.remove('show', 'active');
+        });
+        document.getElementById(targetId).classList.add('show', 'active');
+      });
+    });
+  </script>
+</body>
+
+</html>
