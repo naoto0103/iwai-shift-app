@@ -46,7 +46,8 @@ const Sidebar: React.FC<SidebarProps> = ({ width, userMode, onUserModeChange }) 
     { path: '/employees', icon: <PeopleIcon />, text: '従業員管理' },
     { path: '/stores', icon: <StoreIcon />, text: '店舗管理' },
     { path: '/events-seasonal', icon: <EventIcon />, text: 'イベント・季節情報' },
-    { path: '/settings', icon: <SettingsIcon />, text: '設定' }
+    { path: '/settings', icon: <SettingsIcon />, text: '設定' },
+    { path: '/component-test', icon: <CalendarIcon />, text: 'テストページ' }
   ];
   
   // 従業員メニュー項目

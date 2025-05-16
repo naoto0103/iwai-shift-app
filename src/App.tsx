@@ -4,6 +4,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Layout from './components/common/Layout';
+import ComponentTestPage from './pages/ComponentTestPage';
 import './App.css';
 
 // 仮のページコンポーネント（後で実装）
@@ -128,6 +129,12 @@ const AppContent: React.FC = () => {
               <Settings />
             </Layout>
           </ProtectedRoute>
+        } />
+
+        <Route path="/component-test" element={
+          <Layout>
+            <ComponentTestPage />
+          </Layout>
         } />
         
         {/* 従業員ルート */}
