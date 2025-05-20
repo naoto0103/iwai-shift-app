@@ -9,12 +9,13 @@ import Login from './pages/Login';
 import Layout from './components/common/Layout';
 import ComponentTestPage from './pages/ComponentTestPage';
 import './App.css';
+import Dashboard from './pages/admin/Dashboard';
+import EmployeeManagement from './pages/admin/EmployeeManagement';
+import ShiftCalendar from './pages/admin/ShiftCalendar';
+import StoreManagement from './pages/admin/StoreManagement';
+
 
 // 仮のページコンポーネント（後で実装）
-const Dashboard = () => <div>ダッシュボード</div>;
-const ShiftCalendar = () => <div>シフトカレンダー</div>;
-const Employees = () => <div>従業員管理</div>;
-const Stores = () => <div>店舗管理</div>;
 const EventsSeasonal = () => <div>イベント・季節情報</div>;
 const Settings = () => <div>設定</div>;
 const EmployeeProfile = () => <div>プロフィール</div>;
@@ -146,14 +147,14 @@ const AppContent: React.FC = () => {
           <Route path="/employees" element={
             <ProtectedRoute requiredRole="admin">
               <Layout>
-                <Employees />
+                <EmployeeManagement />
               </Layout>
             </ProtectedRoute>
           } />
           <Route path="/stores" element={
             <ProtectedRoute requiredRole="admin">
               <Layout>
-                <Stores />
+                <StoreManagement />
               </Layout>
             </ProtectedRoute>
           } />

@@ -32,7 +32,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         sx={{
           flexGrow: 1,
           p: 3,
-          ml: `${SIDEBAR_WIDTH}px`,
+          ml: `${SIDEBAR_WIDTH * 0.3}px`,
           backgroundColor: 'background.default',
           minHeight: '100vh'
         }}
